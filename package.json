@@ -1,0 +1,41 @@
+{
+  "name": "loginapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "karma start",
+    "dev": "docker compose -f ./src/infra/compose.yaml up -d && nodemon ./src/server.ts",
+    "build": "tsc",
+    "db:start": "docker compose -f ./src/infra/compose.yaml up -d"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jasmine": "^5.1.4",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/pg": "^8.11.2",
+    "jasmine-core": "^5.1.2",
+    "karma": "^6.4.3",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-jasmine": "^5.1.0",
+    "karma-webpack": "^5.0.1",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3",
+    "webpack-dev-server": "^5.0.2"
+  }
+}
