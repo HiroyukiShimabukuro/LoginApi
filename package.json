@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "karma start",
-    "dev": "docker compose -f ./src/infra/compose.yaml up -d && nodemon ./src/server.ts",
+    "dev": "tsc && nodemon ./src/server.ts",
     "build": "tsc",
     "db:start": "docker compose -f ./src/infra/compose.yaml up -d"
   },
