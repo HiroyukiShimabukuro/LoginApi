@@ -13,7 +13,15 @@ async function query(queryObject: string, params?: any) {
 
   await client.connect();
 
-  const result = await client.query(queryObject);
+  const queryBuild = {
+    text: queryObject,
+    values: params,
+  };
+
+  console.log(21, queryBuild);
+  const result = await client.query(queryBuild);
+  console.log(22, result);
+
   await client.end();
   return result;
 }

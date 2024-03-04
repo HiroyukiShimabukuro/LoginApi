@@ -54,10 +54,12 @@ class UserUseCase {
   static async create({ name, email, password }: IRequest): Promise<IResponse> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE email = $1",
-      email,
+      [email],
     );
-
+    console.log(queryResult);
     const user = queryResult.rows[0];
+
+    console.log(user);
 
     if (user) {
       throw new Error("Email already registered");

@@ -4,7 +4,6 @@ import { UserUseCase } from "./UserUseCase";
 class UserController {
   async authenticate(request: Request, response: Response): Promise<Response> {
     const { password, email } = request.body;
-    console.log(8, UserUseCase);
 
     const token = await UserUseCase.authenticate({
       password,
@@ -16,13 +15,14 @@ class UserController {
 
   async create(request: Request, response: Response): Promise<Response> {
     const { password, email, name } = request.body;
-    console.log(8, UserUseCase);
 
     const token = await UserUseCase.create({
       name,
       password,
       email,
     });
+
+    console.log(token);
 
     return response.json(token);
   }
