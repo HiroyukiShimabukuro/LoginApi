@@ -3,6 +3,7 @@ import { sign } from "jsonwebtoken";
 import database from "./../../../../infra/database";
 import dotenv from "dotenv";
 import { User } from "../../dtos/User";
+import { ApiError } from "../../../../errors/ApiError";
 dotenv.config();
 interface IRequest {
   name?: string;
@@ -22,21 +23,26 @@ class UserUseCase {
   static async authenticate({ email, password }: IRequest): Promise<IResponse> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE email = $1",
-      email,
+      [email],
     );
 
     const user = queryResult.rows[0];
 
     if (!user) {
-      throw new Error("Email or password incorrect");
+      throw new ApiError("Email or password incorrect");
     }
-    const passwordMatch = await bycrypt.compare(password, user.password);
+
+    const passwordMatch = await bycrypt.compare(
+      password.toString(),
+      user.password,
+    );
     if (!passwordMatch) {
-      throw new Error("Email or password incorrect");
+      throw new ApiError("Email or password incorrect");
     }
+
     const jwtSecret = process.env.JWT_SECRET ?? "";
-    const token = sign({}, jwtSecret, {
-      subject: user.id,
+
+    const token = await sign({ sub: user.id, iat: Date.now() }, jwtSecret, {
       expiresIn: "1d",
     });
 
@@ -47,7 +53,6 @@ class UserUseCase {
         email: user.email,
       },
     };
-
     return tokenReturn;
   }
 
@@ -60,13 +65,10 @@ class UserUseCase {
       "SELECT * FROM users WHERE email = $1",
       [email],
     );
-    console.log(queryResult);
     const user = queryResult.rows[0];
 
-    console.log(user);
-
     if (user) {
-      throw new Error("Email already registered");
+      throw new ApiError("Email already registered");
     }
 
     await database.query(
@@ -75,8 +77,7 @@ class UserUseCase {
     );
 
     const jwtSecret = process.env.JWT_SECRET ?? "";
-    const token = sign({}, jwtSecret, {
-      subject: user.id,
+    const token = await sign({ sub: user.id, iat: Date.now() }, jwtSecret, {
       expiresIn: "1d",
     });
 
@@ -109,7 +110,7 @@ class UserUseCase {
     const user = queryResult.rows[0];
 
     if (!user) {
-      throw new Error("User not found!");
+      throw new ApiError("User not found!");
     }
     await database.query(
       "UPDATE users SET name = $1, email = $2, password = $3 WHERE email = $2",
@@ -135,7 +136,7 @@ class UserUseCase {
     const user = queryResult.rows[0];
 
     if (!user) {
-      throw new Error("User not found!");
+      throw new ApiError("User not found!");
     }
     await database.query("DELETE * FROM users WHERE id = $1", id);
 

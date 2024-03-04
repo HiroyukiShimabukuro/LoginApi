@@ -5,12 +5,16 @@ class UserController {
   async authenticate(request: Request, response: Response): Promise<Response> {
     const { password, email } = request.body;
 
-    const token = await UserUseCase.authenticate({
-      password,
-      email,
-    });
+    try {
+      const token = await UserUseCase.authenticate({
+        password,
+        email,
+      });
 
-    return response.json(token);
+      return response.json(token);
+    } catch (error) {
+      return response.json(error);
+    }
   }
 
   async create(request: Request, response: Response): Promise<Response> {
@@ -25,7 +29,7 @@ class UserController {
 
       return response.json(token);
     } catch (error) {
-      return response.json(error).status(401);
+      return response.json(error);
     }
   }
 

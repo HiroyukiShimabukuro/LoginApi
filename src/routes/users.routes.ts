@@ -9,6 +9,8 @@ usersRoutes.post("/register", userController.create);
 usersRoutes.post("/auth", userController.authenticate);
 
 usersRoutes.get("/", isAuthenticated, userController.list);
+usersRoutes.get("/:id", isAuthenticated, userController.findById);
+
 usersRoutes.put("/update/:id", isAuthenticated, userController.update);
 usersRoutes.delete("/delete/:id", isAuthenticated, userController.delete);
 
