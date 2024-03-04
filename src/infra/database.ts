@@ -18,9 +18,7 @@ async function query(queryObject: string, params?: any) {
     values: params,
   };
 
-  console.log(21, queryBuild);
   const result = await client.query(queryBuild);
-  console.log(22, result);
 
   await client.end();
   return result;

@@ -16,15 +16,17 @@ class UserController {
   async create(request: Request, response: Response): Promise<Response> {
     const { password, email, name } = request.body;
 
-    const token = await UserUseCase.create({
-      name,
-      password,
-      email,
-    });
+    try {
+      const token = await UserUseCase.create({
+        name,
+        password,
+        email,
+      });
 
-    console.log(token);
-
-    return response.json(token);
+      return response.json(token);
+    } catch (error) {
+      return response.json(error).status(401);
+    }
   }
 
   async findById(request: Request, response: Response): Promise<Response> {

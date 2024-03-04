@@ -52,6 +52,10 @@ class UserUseCase {
   }
 
   static async create({ name, email, password }: IRequest): Promise<IResponse> {
+    const dbCreateQuery = await database.query(
+      "CREATE TABLE IF NOT EXISTS public.users (id serial PRIMARY KEY, name varchar(255) NOT NULL, email varchar(255) NOT NULL, password varchar(255), created_at timestamp NOT NULL DEFAULT NOW());",
+    );
+
     const queryResult = await database.query(
       "SELECT * FROM users WHERE email = $1",
       [email],
