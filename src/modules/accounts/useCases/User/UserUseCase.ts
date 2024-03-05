@@ -113,7 +113,6 @@ class UserUseCase {
       "SELECT name, email, created_at FROM users LIMIT $1 OFFSET $2",
       [itensPerPage ?? 1, page - 1 * itensPerPage ?? 1],
     );
-    console.log(queryResult);
 
     const users = queryResult.rows;
     return users;
