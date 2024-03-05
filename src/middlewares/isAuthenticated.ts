@@ -17,8 +17,8 @@ export async function isAuthenticated(
     throw new ApiError("Token missing");
   }
 
+  const jwtSecret = process.env.JWT_SECRET ?? "";
   try {
-    const jwtSecret = process.env.JWT_SECRET ?? "";
     const { sub: userOfToken } = verify(token, jwtSecret);
 
     const queryResult = await database.query(

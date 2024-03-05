@@ -69,15 +69,12 @@ class UserController {
   }
 
   async delete(request: Request, response: Response): Promise<Response> {
-    const { password, email } = request.body;
+    const { id } = request.params;
 
     try {
-      const token = await UserUseCase.authenticate({
-        password,
-        email,
-      });
+      const deleted = await UserUseCase.delete(id);
 
-      return response.json(token);
+      return response.json(deleted);
     } catch (error) {
       return response.json(error);
     }

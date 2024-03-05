@@ -4,6 +4,7 @@ import database from "./../../../../infra/database";
 import dotenv from "dotenv";
 import { User } from "../../dtos/User";
 import { ApiError } from "../../../../errors/ApiError";
+import { Query } from "pg";
 dotenv.config();
 interface IRequest {
   name?: string;
@@ -65,7 +66,7 @@ class UserUseCase {
   }
 
   static async create({ name, email, password }: IRequest): Promise<IResponse> {
-    const dbCreateQuery = await database.query(
+    await database.query(
       "CREATE TABLE IF NOT EXISTS public.users (id serial PRIMARY KEY, name varchar(255) NOT NULL, email varchar(255) NOT NULL, password varchar(255), created_at timestamp NOT NULL DEFAULT NOW());",
     );
 
@@ -169,7 +170,7 @@ class UserUseCase {
     return userUpdated;
   }
 
-  static async delete(id: number): Promise<void> {
+  static async delete(id: string): Promise<Number | null> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE id = $1",
       [id],
@@ -180,9 +181,12 @@ class UserUseCase {
     if (!user) {
       throw new ApiError("User not found!");
     }
-    await database.query("DELETE * FROM users WHERE id = $1", id);
+    const deleted = await database.query(
+      "DELETE FROM users WHERE id = $1 RETURNING *",
+      [id],
+    );
 
-    return;
+    return deleted.rowCount;
   }
 }
 
