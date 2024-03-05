@@ -9,6 +9,7 @@ interface IRequest {
   name?: string;
   email: string;
   password: string;
+  id?: string;
 }
 
 interface IResponse {
@@ -45,10 +46,12 @@ class UserUseCase {
     const token = await sign(
       {
         sub: user.id,
-        iat: Date.now(),
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+        iat: Math.floor(Date.now() / 1000),
       },
       jwtSecret,
+      {
+        expiresIn: "1d",
+      },
     );
 
     const tokenReturn: IResponse = {
@@ -85,10 +88,12 @@ class UserUseCase {
     const token = await sign(
       {
         sub: user.id,
-        iat: Date.now(),
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+        iat: Math.floor(Date.now() / 1000),
       },
       jwtSecret,
+      {
+        expiresIn: "1d",
+      },
     );
 
     const tokenReturn: IResponse = {
@@ -121,26 +126,43 @@ class UserUseCase {
     return user;
   }
 
-  static async update({ name, email, password }: IRequest): Promise<IResponse> {
+  static async update({
+    name,
+    email,
+    password,
+    id,
+  }: IRequest): Promise<IResponse> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE email = $1",
-      email,
+      [email],
     );
 
-    const user = queryResult.rows[0];
+    const atualData = await database.query(
+      "SELECT * FROM users WHERE id = $1",
+      [id],
+    );
 
-    if (!user) {
-      throw new ApiError("User not found!");
+    const emailDifferent = queryResult.rows[0];
+    const user = atualData.rows[0];
+
+    if (emailDifferent) {
+      throw new ApiError("Email already registered!");
     }
+
     await database.query(
-      "UPDATE users SET name = $1, email = $2, password = $3 WHERE email = $2",
-      [name, email, password],
+      "UPDATE users SET name = $1, email = $2, password = $3 WHERE id = $4",
+      [
+        name ?? user.name,
+        email ?? user.email,
+        (await bycrypt.hash(password, 10)) ?? user.password,
+        id,
+      ],
     );
 
     const userUpdated: IResponse = {
       user: {
-        name: user.name,
-        email: user.email,
+        name: name ?? user.name,
+        email: email ?? user.email,
       },
     };
 
@@ -150,7 +172,7 @@ class UserUseCase {
   static async delete(id: number): Promise<void> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE id = $1",
-      id,
+      [id],
     );
 
     const user = queryResult.rows[0];

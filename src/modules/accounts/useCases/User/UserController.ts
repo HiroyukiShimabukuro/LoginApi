@@ -53,25 +53,34 @@ class UserController {
 
   async update(request: Request, response: Response): Promise<Response> {
     const { password, email, name } = request.body;
+    const { id } = request.params;
+    try {
+      const user = await UserUseCase.update({
+        name,
+        password,
+        email,
+        id,
+      });
 
-    const token = await UserUseCase.update({
-      name,
-      password,
-      email,
-    });
-
-    return response.json(token);
+      return response.json(user);
+    } catch (error) {
+      return response.json(error);
+    }
   }
 
   async delete(request: Request, response: Response): Promise<Response> {
     const { password, email } = request.body;
 
-    const token = await UserUseCase.authenticate({
-      password,
-      email,
-    });
+    try {
+      const token = await UserUseCase.authenticate({
+        password,
+        email,
+      });
 
-    return response.json(token);
+      return response.json(token);
+    } catch (error) {
+      return response.json(error);
+    }
   }
 }
 
