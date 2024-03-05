@@ -7,7 +7,7 @@ import { ApiError } from "../../../../errors/ApiError";
 import { Query, QueryResult } from "pg";
 dotenv.config();
 interface IRequest {
-  name?: string;
+  name: string;
   email: string;
   password: string;
   id?: string;
@@ -21,7 +21,7 @@ interface IResponse {
   token?: string;
 }
 type UserWithoutPassword = Omit<User, "password">;
-
+type IRequestWithoutName = Omit<IRequest, "name">;
 interface IPaginatedUsers {
   users: UserWithoutPassword[];
   pagination: {
@@ -34,7 +34,10 @@ interface IPaginatedUsers {
 }
 
 class UserUseCase {
-  static async authenticate({ email, password }: IRequest): Promise<IResponse> {
+  static async authenticate({
+    email,
+    password,
+  }: IRequestWithoutName): Promise<IResponse> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE email = $1",
       [email],
@@ -86,21 +89,24 @@ class UserUseCase {
       "SELECT * FROM users WHERE email = $1",
       [email],
     );
-    const user = queryResult.rows[0];
+    const emailExists = queryResult.rows[0];
 
-    if (user) {
+    if (emailExists) {
       throw new ApiError("Email already registered");
     }
 
-    await database.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
-      [name, email, await bycrypt.hash(password, 10)],
+    const hashedPassword = await bycrypt.hash(password, 10);
+
+    const user = await database.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id",
+      [name, email, hashedPassword],
     );
 
     const jwtSecret = process.env.JWT_SECRET ?? "";
+
     const token = await sign(
       {
-        sub: user.id,
+        sub: user.rows[0].id,
         iat: Math.floor(Date.now() / 1000),
       },
       jwtSecret,
@@ -112,8 +118,8 @@ class UserUseCase {
     const tokenReturn: IResponse = {
       token,
       user: {
-        name: user.name,
-        email: user.email,
+        name: name,
+        email: email,
       },
     };
 
