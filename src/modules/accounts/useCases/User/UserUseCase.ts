@@ -108,10 +108,12 @@ class UserUseCase {
     return tokenReturn;
   }
 
-  static async list(): Promise<User[]> {
+  static async list(page: number, itensPerPage: number): Promise<User[]> {
     const queryResult = await database.query(
-      "SELECT name, email, created_at FROM users",
+      "SELECT name, email, created_at FROM users LIMIT $1 OFFSET $2",
+      [itensPerPage ?? 1, page - 1 * itensPerPage ?? 1],
     );
+    console.log(queryResult);
 
     const users = queryResult.rows;
     return users;
