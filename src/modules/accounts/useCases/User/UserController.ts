@@ -34,28 +34,21 @@ class UserController {
   }
 
   async findById(request: Request, response: Response): Promise<Response> {
-    const { password, email } = request.body;
+    const { id } = request.params;
 
-    const token = await UserUseCase.authenticate({
-      password,
-      email,
-    });
+    const user = await UserUseCase.findById(id);
 
-    return response.json(token);
+    return response.json(user);
   }
 
   async list(request: Request, response: Response): Promise<Response> {
-    const { password, email } = request.body;
+    try {
+      const UserList = await UserUseCase.list();
 
-    console.log(44, password, email);
-    console.log(45, UserUseCase);
-
-    const token = await UserUseCase.authenticate({
-      password,
-      email,
-    });
-
-    return response.json(token);
+      return response.json(UserList);
+    } catch (error) {
+      return response.json(error);
+    }
   }
 
   async update(request: Request, response: Response): Promise<Response> {

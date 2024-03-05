@@ -101,6 +101,16 @@ class UserUseCase {
     return users;
   }
 
+  static async findById(id: string): Promise<User> {
+    const queryResult = await database.query(
+      "SELECT name, email, created_at FROM users WHERE id = $1",
+      [id],
+    );
+
+    const user = queryResult.rows[0];
+    return user;
+  }
+
   static async update({ name, email, password }: IRequest): Promise<IResponse> {
     const queryResult = await database.query(
       "SELECT * FROM users WHERE email = $1",

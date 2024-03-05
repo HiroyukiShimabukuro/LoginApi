@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 import database from "./../infra/database";
+import { ApiError } from "./../errors/ApiError";
 
 interface IPayload {
   sub: string;
@@ -13,7 +14,7 @@ export async function isAuthenticated(
   const authHeader = req.headers.authorization;
   const [, token] = authHeader?.split(" ") || [];
   if (!token) {
-    return res.status(401).send();
+    throw new ApiError("Token missing");
   }
 
   try {
@@ -27,10 +28,10 @@ export async function isAuthenticated(
 
     const user = queryResult.rows[0];
     if (!user) {
-      return res.status(401).send();
+      throw new ApiError("Token inválido!");
     }
     next();
   } catch (error) {
-    return res.status(401).send();
+    return res.json(error);
   }
 }
