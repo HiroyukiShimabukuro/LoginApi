@@ -42,9 +42,14 @@ class UserUseCase {
 
     const jwtSecret = process.env.JWT_SECRET ?? "";
 
-    const token = await sign({ sub: user.id, iat: Date.now() }, jwtSecret, {
-      expiresIn: "1d",
-    });
+    const token = await sign(
+      {
+        sub: user.id,
+        iat: Date.now(),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+      },
+      jwtSecret,
+    );
 
     const tokenReturn: IResponse = {
       token,
@@ -77,9 +82,14 @@ class UserUseCase {
     );
 
     const jwtSecret = process.env.JWT_SECRET ?? "";
-    const token = await sign({ sub: user.id, iat: Date.now() }, jwtSecret, {
-      expiresIn: "1d",
-    });
+    const token = await sign(
+      {
+        sub: user.id,
+        iat: Date.now(),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+      },
+      jwtSecret,
+    );
 
     const tokenReturn: IResponse = {
       token,
