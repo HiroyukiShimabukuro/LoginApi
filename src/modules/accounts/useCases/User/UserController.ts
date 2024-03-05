@@ -44,12 +44,17 @@ class UserController {
   async list(request: Request, response: Response): Promise<Response> {
     const { page, itensPerPage } = request.query;
     try {
-      const UserList = await UserUseCase.list(
+      const queryResult = await UserUseCase.list(
+        Number(page),
+        Number(itensPerPage),
+      );
+      const paginatedResults = await UserUseCase.paginate(
+        queryResult,
         Number(page),
         Number(itensPerPage),
       );
 
-      return response.json(UserList);
+      return response.json(paginatedResults);
     } catch (error) {
       return response.json(error);
     }

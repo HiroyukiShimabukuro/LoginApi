@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { UserController } from "../modules/accounts/useCases/User/UserController";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
-
 const usersRoutes = Router();
 const userController = new UserController();
 

@@ -4,7 +4,7 @@ import database from "./../../../../infra/database";
 import dotenv from "dotenv";
 import { User } from "../../dtos/User";
 import { ApiError } from "../../../../errors/ApiError";
-import { Query } from "pg";
+import { Query, QueryResult } from "pg";
 dotenv.config();
 interface IRequest {
   name?: string;
@@ -19,6 +19,18 @@ interface IResponse {
     email: string;
   };
   token?: string;
+}
+type UserWithoutPassword = Omit<User, "password">;
+
+interface IPaginatedUsers {
+  users: UserWithoutPassword[];
+  pagination: {
+    total_records: number;
+    current_page: number;
+    total_pages: number;
+    next_page: number | null;
+    prev_page: number | null;
+  };
 }
 
 class UserUseCase {
@@ -108,13 +120,14 @@ class UserUseCase {
     return tokenReturn;
   }
 
-  static async list(page: number, itensPerPage: number): Promise<User[]> {
+  static async list(page: number, itensPerPage: number): Promise<QueryResult> {
     const queryResult = await database.query(
-      "SELECT name, email, created_at FROM users LIMIT $1 OFFSET $2",
-      [itensPerPage ?? 1, page - 1 * itensPerPage ?? 1],
+      "SELECT users.*, count(*) over() as qtdusers FROM users LIMIT $1 OFFSET $2",
+      [itensPerPage, (page - 1) * itensPerPage],
     );
 
-    const users = queryResult.rows;
+    const users = queryResult;
+
     return users;
   }
 
@@ -188,6 +201,37 @@ class UserUseCase {
     );
 
     return deleted.rowCount;
+  }
+
+  static async paginate(
+    queryResult: QueryResult,
+    page: number,
+    itensPerPage: number,
+  ): Promise<IPaginatedUsers> {
+    const totalRecords: number = parseInt(queryResult.rows[0].qtdusers);
+    const totalPages: number = Math.ceil(totalRecords / itensPerPage);
+
+    const userList = queryResult.rows;
+    const mappedUser: UserWithoutPassword[] = userList.map((user) => {
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        created_at: user.created_at,
+      };
+    });
+
+    const paginatedResults: IPaginatedUsers = {
+      users: [...mappedUser],
+      pagination: {
+        total_records: totalRecords,
+        current_page: page,
+        total_pages: totalPages,
+        next_page: page + 1 > totalPages ? null : page + 1,
+        prev_page: page > 1 ? page - 1 : null,
+      },
+    };
+    return paginatedResults;
   }
 }
 
