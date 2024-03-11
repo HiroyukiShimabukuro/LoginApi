@@ -7,7 +7,9 @@
     "test": "karma start",
     "dev": "tsc && nodemon ./src/server.ts",
     "build": "tsc",
-    "db:start": "docker compose -f ./src/infra/compose.yaml up -d"
+    "db:start": "docker compose -f ./src/infra/compose.yaml up -d",
+    "db:stop": "docker compose -f ./src/infra/compose.yaml stop",
+    "db:remove": "docker compose -f ./src/infra/compose.yaml down"
   },
   "keywords": [],
   "author": "",
